@@ -1,0 +1,50 @@
+version: '3'
+
+services:
+        jenkins:
+                container_name: jenkins-blueocean
+                image: jenkinsci/blueocean
+                networks:
+                        - sonarnet
+                ports:
+                        - 8080:8080
+                        - 50000:50000
+                volumes:
+                        - jenkins_home:/var/jenkins_home
+        sonarqube:
+                container_name: sonarqube
+                image: sonarqube:alpine
+                ports:
+                        - 9000:9000
+                        - 9092:9092
+                networks:
+                        - sonarnet
+                environment:
+                        - SONARQUBE_JDBC_URL=jdbc:postgresql://db:5432/sonar
+                volumes:
+                        - sonarqube_conf:/opt/sonarqube/conf
+                        - sonarqube_data:/opt/sonarqube/data
+                        - sonarqube_extensions:/opt/sonarqube/extenions
+                        - sonarqube_bundled-pluins:/opt/sonarqube/lib/bundled-plugins
+        db:
+                container_name: sonarqube-postgres
+                image: postgres:alpine
+                networks:
+                        - sonarnet
+                environment:
+                        - POSTGRES_USER=sonar
+                        - POSTGRES_PASSWORD=sonar
+                volumes:
+                        - postgresql:/var/lib/postgresql
+                        - postgresql_data:/var/lib/postgresql/data
+volumes:
+        jenkins_home:
+        sonarqube_conf:
+        sonarqube_data:
+        sonarqube_extensions:
+        sonarqube_bundled-pluins:
+        postgresql:
+        postgresql_data:
+networks:
+        sonarnet:
+                driver: bridge
